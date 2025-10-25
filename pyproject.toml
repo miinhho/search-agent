@@ -1,0 +1,14 @@
+[project]
+name = "search-agent"
+version = "0.1.0"
+description = "LLM search agent"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "ddgs>=9.6.1",
+    "langchain>=1.0.2",
+    "langchain-google-genai>=3.0.0",
+    "langfuse>=3.8.1",
+    "langgraph>=1.0.1",
+    "python-dotenv>=1.1.1",
+]
