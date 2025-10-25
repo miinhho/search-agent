@@ -28,7 +28,7 @@ async def run_search_agent(
         Dictionary containing final answer and complete execution context
     """
     try:
-        logger.info(f"Starting search agent for query: {user_query[:100]}...")
+        logger.debug(f"Starting search agent for query: {user_query[:100]}...")
 
         # Create the graph
         graph = create_search_agent_graph()
@@ -58,7 +58,7 @@ async def run_search_agent(
             "metadata": ctx.metadata,
         }
 
-        logger.info(f"Search agent completed: {final_state['attempt']} attempts")
+        logger.debug(f"Search agent completed: {final_state['attempt']} attempts")
         return result
 
     except Exception as e:
@@ -78,7 +78,9 @@ async def run_search_agent_stream(user_query: str, max_attempts: int = 3):
         Execution events with updated state
     """
     try:
-        logger.info(f"Starting streaming search agent for query: {user_query[:100]}...")
+        logger.debug(
+            f"Starting streaming search agent for query: {user_query[:100]}..."
+        )
 
         # Create the graph
         graph = create_search_agent_graph()

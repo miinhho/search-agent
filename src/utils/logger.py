@@ -13,7 +13,7 @@ def setup_logger() -> None:
     log_file_path = os.path.join(log_dir, f"search-agent_${current_date_str}.log")
 
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(sys.stdout),

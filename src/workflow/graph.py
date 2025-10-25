@@ -39,7 +39,7 @@ def create_search_agent_graph(max_results: int = 4):
 
             context.messages.append(AIMessage(f"Generated search plan:\n{plan}"))
 
-            logger.info(f"Plan generated successfully: {plan.steps}")
+            logger.debug(f"Plan generated successfully: {plan.steps}")
             return state
 
         except Exception as e:
@@ -60,9 +60,7 @@ def create_search_agent_graph(max_results: int = 4):
             search_filter = context.filters.search_filter
 
             # Execute search
-            results = await action_executor.execute_plan(
-                state["plan"], state["user_query"], search_filter
-            )
+            results = await action_executor.execute_plan(state["plan"], search_filter)
 
             # Aggregate results
             search_results = ""
@@ -96,7 +94,7 @@ def create_search_agent_graph(max_results: int = 4):
                 )
             )
 
-            logger.info(
+            logger.debug(
                 f"Search executed: {len(results)} tasks, {len(search_results)} chars"
             )
             return state
@@ -139,7 +137,7 @@ def create_search_agent_graph(max_results: int = 4):
                 )
                 context.filters.add_flagged_sources(flagged)
 
-            logger.info(
+            logger.debug(
                 f"Summarization complete: valid={is_valid}, flagged={len(flagged)}"
             )
             return state

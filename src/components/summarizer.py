@@ -50,7 +50,7 @@ class Summarizer:
             user_query: The original user query
             search_results: The search results from Action stage
         """
-        logger.info(f"Starting summarization for query: {user_query[:100]}...")
+        logger.debug(f"Starting summarization for query: {user_query[:100]}...")
 
         if not search_results.strip():
             logger.warning("Empty search results provided")

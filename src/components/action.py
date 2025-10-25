@@ -3,7 +3,6 @@ Action executor for search workflows.
 """
 
 import logging
-import re
 import asyncio
 from ddgs import DDGS
 
@@ -31,16 +30,12 @@ class ActionExecutor:
         self.max_workers = get_workers() if max_workers is None else max_workers
 
     async def execute_plan(
-        self, plan: list[str], user_query: str, source_filter: str = ""
+        self, plan: list[str], source_filter: str = ""
     ) -> list[dict]:
         """Execute search plan and return results in parallel asynchronously."""
 
-        search_queries = self._extract_queries(plan, user_query)
-        logger.debug(f"Search Queries: {search_queries}")
-
-        # Prepare search tasks
         tasks: list[tuple[int, str, str]] = []
-        for i, query in enumerate(search_queries, 1):
+        for i, query in enumerate(plan, 1):
             filtered_query = f"{query} {source_filter}".strip()
             tasks.append((i, query, filtered_query))
 
@@ -74,20 +69,6 @@ class ActionExecutor:
         # Filter out exceptions if any
         valid_results = [r for r in results if isinstance(r, dict)]
         return valid_results
-
-    def _extract_queries(self, plan: list[str], user_query: str) -> list[str]:
-        """Extract search queries from plan."""
-        queries: list[str] = []
-        for line in plan:
-            match = re.match(r"^\s*\d+[\.\)]\s*(.+)", line.strip())
-            if match:
-                task = match.group(1).strip()
-                if len(task) > 5:
-                    queries.append(
-                        task if "search" in task.lower() else f"{user_query} {task}"
-                    )
-
-        return queries if queries else [user_query]
 
     def _search(self, query: str) -> str:
         """Perform search using DDGS."""
