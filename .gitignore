@@ -15,4 +15,5 @@ wheels/
 
 .ruff_cache
 
+logs
 *.log

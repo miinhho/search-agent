@@ -1,52 +1,84 @@
-"""Action executor for search workflows."""
+"""
+Action executor for search workflows.
+"""
 
 import logging
 import re
+import asyncio
 from ddgs import DDGS
+
+from src.utils import get_workers
 
 logger = logging.getLogger(__name__)
 
 
-# TODO : Reduce search latency (currently: 43.637s)
 class ActionExecutor:
     """Executes search actions from a validated plan."""
 
-    def __init__(self, max_results: int = 8):
+    def __init__(self, max_results: int = 4, max_workers: int | None = None):
+        """
+        Initialize ActionExecutor.
+
+        Args:
+            max_results: Number of search results per query (default: 4)
+            max_workers: Number of concurrent searches. If None, auto-calculates
+                        based on CPU cores. For I/O-bound network tasks,
+                        2x CPU count is optimal.
+        """
         self.max_results = max_results
 
-    def execute_plan(
-        self, plan: str, user_query: str, source_filter: str = ""
+        # Auto-calculate optimal workers if not specified
+        self.max_workers = get_workers() if max_workers is None else max_workers
+
+    async def execute_plan(
+        self, plan: list[str], user_query: str, source_filter: str = ""
     ) -> list[dict]:
-        """Execute search plan and return results."""
+        """Execute search plan and return results in parallel asynchronously."""
 
         search_queries = self._extract_queries(plan, user_query)
-        results = []
-        print(search_queries)
+        logger.debug(f"Search Queries: {search_queries}")
 
+        # Prepare search tasks
+        tasks: list[tuple[int, str, str]] = []
         for i, query in enumerate(search_queries, 1):
             filtered_query = f"{query} {source_filter}".strip()
+            tasks.append((i, query, filtered_query))
 
+        async def run_search(
+            task_number: int, original_query: str, filtered_query: str
+        ) -> dict:
             try:
-                search_result = self._search(filtered_query)
-                results.append(
-                    {"task_number": i, "search_query": query, "results": search_result}
-                )
+                search_result = await asyncio.to_thread(self._search, filtered_query)
+                return {
+                    "task_number": task_number,
+                    "search_query": original_query,
+                    "results": search_result,
+                }
             except Exception as e:
-                logger.error(f"Search failed for query {i}: {e}")
-                results.append(
-                    {"task_number": i, "search_query": query, "error": str(e)}
-                )
+                logger.error(f"Search failed for query {task_number}: {e}")
+                return {
+                    "task_number": task_number,
+                    "search_query": original_query,
+                    "error": str(e),
+                }
 
-        return results
+        # Gather all tasks
+        results = await asyncio.gather(
+            *[
+                run_search(task_number, original_query, filtered_query)
+                for task_number, original_query, filtered_query in tasks
+            ],
+            return_exceptions=True,
+        )
 
-    def _extract_queries(self, plan: str, user_query: str) -> list[str]:
+        # Filter out exceptions if any
+        valid_results = [r for r in results if isinstance(r, dict)]
+        return valid_results
+
+    def _extract_queries(self, plan: list[str], user_query: str) -> list[str]:
         """Extract search queries from plan."""
-
-        if not plan.strip():
-            return [user_query]
-
-        queries = []
-        for line in plan.split("\n"):
+        queries: list[str] = []
+        for line in plan:
             match = re.match(r"^\s*\d+[\.\)]\s*(.+)", line.strip())
             if match:
                 task = match.group(1).strip()

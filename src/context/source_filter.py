@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class SourceFilterData:
-    """Simple container for flagged sources."""
+    """Container for flagged sources."""
 
     flagged_sources: list[str] = field(default_factory=list)
 
@@ -17,8 +17,7 @@ class SourceFilterData:
 
     def add_flagged_sources(self, domains: list[str]) -> None:
         for domain in domains:
-            if domain and domain not in self.flagged_sources:
-                self.flagged_sources.append(domain)
+            self.add_flagged_source(domain)
 
     @property
     def search_filter(self) -> str:

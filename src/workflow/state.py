@@ -7,17 +7,18 @@ Defines the core state structure and initialization logic for LangGraph workflow
 from typing import TypedDict
 from src.context import SearchContext
 
+from src.utils.validation_status import ValidationStatus
+
 
 class AgentState(TypedDict):
     """State definition for workflow."""
 
     # Core workflow data
     user_query: str
-    plan: str
-    plan_valid: bool
+    plan: list[str]
     search_results: str
     summary: str
-    summary_valid: bool
+    summary_valid: ValidationStatus
 
     # Control flow
     attempt: int
@@ -32,25 +33,14 @@ class AgentState(TypedDict):
 
 
 def create_initial_state(user_query: str, max_attempts: int = 3) -> AgentState:
-    """
-    Create initial AgentState
-
-    Args:
-        user_query: The user's search query
-        max_attempts: Maximum retry attempts
-
-    Returns:
-        Initialized AgentState
-    """
     context = SearchContext()
 
     return {
         "user_query": user_query,
-        "plan": "",
-        "plan_valid": False,
+        "plan": [],
         "search_results": "",
         "summary": "",
-        "summary_valid": False,
+        "summary_valid": ValidationStatus.INVALID,
         "attempt": 1,
         "max_attempts": max_attempts,
         "final_answer": "",

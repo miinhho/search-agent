@@ -34,11 +34,9 @@ async def run_search_agent(
         graph = create_search_agent_graph()
 
         # Initialize state
-        initial_state = create_initial_state(
-            user_query=user_query, max_attempts=max_attempts
-        )
+        initial_state = create_initial_state(user_query, max_attempts)
 
-        # Initialize the Langfuse callback handler
+        # Initialize Langfuse callback handler
         langfuse_handler = CallbackHandler()
 
         # Run the graph with Langfuse observability
@@ -54,13 +52,10 @@ async def run_search_agent(
             "final_answer": final_state["final_answer"],
             "execution_log": final_state["execution_log"],
             "attempts": final_state["attempt"],
-            # Complete context information
             "context": ctx,
             "messages": ctx.messages,
-            "search_history": ctx.history.entries,
             "flagged_sources": ctx.filters.flagged_sources,
             "metadata": ctx.metadata,
-            "invalid_attempts": ctx.validation.invalid_attempts,
         }
 
         logger.info(f"Search agent completed: {final_state['attempt']} attempts")
@@ -89,9 +84,7 @@ async def run_search_agent_stream(user_query: str, max_attempts: int = 3):
         graph = create_search_agent_graph()
 
         # Initialize state
-        initial_state = create_initial_state(
-            user_query=user_query, max_attempts=max_attempts
-        )
+        initial_state = create_initial_state(user_query, max_attempts)
 
         # Run the graph with streaming
         async for event in graph.astream(initial_state):

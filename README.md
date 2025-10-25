@@ -16,16 +16,11 @@
 
 1. Plan
     - The LLM generates a step-by-step plan to obtain the specific information requested by the user.
-    - Stream the plan so the user can see proposed actions immediately.  
 
-2. Optimizer
-    - Verify the LLM's plan.  
-    - If invalid, revise it.    
-
-3. Action
+2. Action
     - Execute the validated plan.  
 
-4. Summarize
+3. Summarize
     - Ensure the response appropriately addresses the user's intent and requirements.  
     - If not valid, identify the cause, update the context, and re-plan/re-optimize.  
     - If valid, stream the final answer to the user.  

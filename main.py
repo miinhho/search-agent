@@ -7,23 +7,14 @@ separation of concerns and LangChain/LangGraph best practices.
 
 import asyncio
 import logging
-import sys
-from datetime import datetime
 from dotenv import load_dotenv
 
 from src.workflow import run_search_agent
+from src.utils.logger import setup_logger
 
 load_dotenv()
+setup_logger()
 
-current_date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler(f"search-agent_{current_date_str}.log"),
-    ],
-)
 logger = logging.getLogger(__name__)
 
 
@@ -33,7 +24,7 @@ async def main():
     user_query = "What are the latest developments in quantum computing in 2025?"
 
     print("=" * 70)
-    print("Search Agent - Refactored LangGraph Workflow")
+    print("Search Agent")
     print("=" * 70)
     print(f"\nUser Query: {user_query}\n")
 
@@ -62,7 +53,6 @@ async def main():
         print("─" * 70)
         print(f"Attempts: {result['attempts']}")
         print(f"Messages in history: {len(result['messages'])}")
-        print(f"Search history entries: {len(result['search_history'])}")
 
         if result["flagged_sources"]:
             print(f"Flagged sources: {', '.join(result['flagged_sources'])}")
