@@ -6,7 +6,6 @@ import logging
 import asyncio
 from ddgs import DDGS
 
-from src.utils import get_workers
 
 logger = logging.getLogger(__name__)
 
@@ -14,20 +13,14 @@ logger = logging.getLogger(__name__)
 class ActionExecutor:
     """Executes search actions from a validated plan."""
 
-    def __init__(self, max_results: int = 4, max_workers: int | None = None):
+    def __init__(self, max_results: int = 4):
         """
         Initialize ActionExecutor.
 
         Args:
             max_results: Number of search results per query (default: 4)
-            max_workers: Number of concurrent searches. If None, auto-calculates
-                        based on CPU cores. For I/O-bound network tasks,
-                        2x CPU count is optimal.
         """
         self.max_results = max_results
-
-        # Auto-calculate optimal workers if not specified
-        self.max_workers = get_workers() if max_workers is None else max_workers
 
     async def execute_plan(
         self, plan: list[str], source_filter: str = ""
