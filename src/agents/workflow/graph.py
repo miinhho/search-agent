@@ -33,13 +33,11 @@ def create_search_agent_graph(max_results: int = 4):
 
             context.messages.append(HumanMessage(user_query))
 
-            # If there is missing_info state, re-generate plan with it
             plan = plan_generator.generate_plan(user_query)
             state["plan"] = plan.steps
 
             context.messages.append(AIMessage(f"Generated search plan:\n{plan}"))
 
-            # Add detailed log for streaming (step details will be handled by frontend)
             state["execution_log"].append(
                 f"✅ Plan generated with {len(plan.steps)} steps"
             )
@@ -78,15 +76,15 @@ def create_search_agent_graph(max_results: int = 4):
             search_summary: list[str] = []
             successful_searches = 0
 
-            for result in results:
-                result_content = result.get("results", "")
-                task_number = result["task_number"]
+            for search_result in results:
+                search_content = search_result.result_format()
+                task_number = search_result.task_number
 
-                if result_content and str(result_content).strip():
-                    search_results += str(result_content) + "\n"
+                if search_content:
+                    search_results += search_content + "\n"
                     successful_searches += 1
                     search_summary.append(f"• Task {task_number}: ✅")
-                elif result.get("error"):
+                elif search_content is None:
                     search_summary.append(f"• Task {task_number}: ❌ Error")
                 else:
                     search_summary.append(f"• Task {task_number}: ⚠️ No results")

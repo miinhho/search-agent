@@ -10,7 +10,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 from langchain.agents import create_agent
 
-from src.agents.error.no_search_result_error import NoSearchResultError
+from src.agents.error import NoSearchResultError
 from src.utils import ValidationStatus
 from src.agents.components.prompt.summarizer import (
     SUMMARIZE_SYSTEM_PROMPT,
@@ -48,7 +48,7 @@ class Summarizer:
         search_results: str,
     ) -> SummarizationResponse:
         """
-        Synthesize search results and validate synchronously.
+        Synthesize search results and validate.
 
         Args:
             user_query: The original user query
