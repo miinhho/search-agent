@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
-from typing import Annotated, AsyncGenerator, Literal, Optional, List, Dict, Any
+from typing import Annotated, AsyncGenerator, Literal, Any
 from src.agents.workflow.runner import run_search_agent_stream
 import logging
 import json
@@ -13,8 +13,8 @@ router = APIRouter()
 
 class StreamEventData(BaseModel):
     attempt: int
-    execution_log: List[str]
-    plan: List[str] = Field(default_factory=list)
+    execution_log: list[str]
+    plan: list[str] = Field(default_factory=list)
     search_results_length: int = 0
     summary_status: str = ""
     final_answer: str = ""
@@ -24,16 +24,16 @@ class StreamEvent(BaseModel):
     event_type: Literal["started", "node_completed", "completed", "error"] = Field(
         description="Type of event"
     )
-    node_name: Optional[str] = Field(default=None, description="Name of completed node")
-    data: Dict[str, Any]
+    node_name: str | None = Field(default=None, description="Name of completed node")
+    data: dict[str, Any]
 
 
 class SearchResult(BaseModel):
     query: str
     final_answer: str
-    execution_log: List[str]
+    execution_log: list[str]
     attempts: int
-    flagged_sources: List[str] = Field(default_factory=list)
+    flagged_sources: list[str] = Field(default_factory=list)
 
 
 @router.get("/search", tags=["Search"])
