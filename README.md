@@ -29,5 +29,5 @@
 
 3. Summarize
     - Ensure the response appropriately addresses the user's intent and requirements.  
-    - If not valid, identify the cause, update the context, and re-plan/re-optimize.  
+    - If not valid, identify the cause, update the context, and re-search.  
     - If valid, stream the final answer to the user.  
