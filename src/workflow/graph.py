@@ -39,6 +39,13 @@ def create_search_agent_graph(max_results: int = 4):
 
             context.messages.append(AIMessage(f"Generated search plan:\n{plan}"))
 
+            # Add detailed log for streaming
+            state["execution_log"].append(
+                f"✅ Plan generated with {len(plan.steps)} steps"
+            )
+            for i, step in enumerate(plan.steps, 1):
+                state["execution_log"].append(f"   Step {i}: {step}")
+
             logger.debug(f"Plan generated successfully: {plan.steps}")
             return state
 
@@ -59,32 +66,52 @@ def create_search_agent_graph(max_results: int = 4):
             context = state["context"]
             search_filter = context.filters.search_filter
 
+            # Add filter info to log
+            if search_filter:
+                state["execution_log"].append(
+                    f"   🚫 Using search filter: {search_filter}"
+                )
+
             # Execute search
             results = await action_executor.execute_plan(state["plan"], search_filter)
 
             # Aggregate results
             search_results = ""
             search_summary: list[str] = []
+            successful_searches = 0
+
             for result in results:
                 result_content = result.get("results", "")
-                query_preview = result["search_query"][:100]
+                query_preview = (
+                    result["search_query"][:50] + "..."
+                    if len(result["search_query"]) > 50
+                    else result["search_query"]
+                )
 
                 task_number = result["task_number"]
                 if result_content and str(result_content).strip():
                     search_results += str(result_content) + "\n"
-                    search_summary.append(
-                        f"• Task {task_number}: {query_preview}... ✅"
-                    )
+                    successful_searches += 1
+                    search_summary.append(f"• Task {task_number}: {query_preview} ✅")
                 elif result.get("error"):
                     search_summary.append(
-                        f"• Task {task_number}: {query_preview}... ❌ Error"
+                        f"• Task {task_number}: {query_preview} ❌ Error: {result['error'][:50]}..."
                     )
                 else:
                     search_summary.append(
-                        f"• Task {task_number}: {query_preview}... ⚠️ No results"
+                        f"• Task {task_number}: {query_preview} ⚠️ No results"
                     )
 
             state["search_results"] = search_results
+
+            # Add detailed execution log
+            state["execution_log"].append(
+                f"✅ Search completed: {successful_searches}/{len(results)} tasks successful"
+            )
+            state["execution_log"].extend(search_summary)
+            state["execution_log"].append(
+                f"   📄 Total content: {len(search_results)} characters"
+            )
 
             # Add search execution to message history
             context.messages.append(
@@ -112,6 +139,12 @@ def create_search_agent_graph(max_results: int = 4):
             state["execution_log"].append("📝 Summarizing results...")
             context = state["context"]
 
+            # Add input info to log
+            input_length = len(state["search_results"])
+            state["execution_log"].append(
+                f"   📊 Processing {input_length} characters of search data"
+            )
+
             summarized_result = summarizer.summarize(
                 state["user_query"], state["search_results"]
             )
@@ -126,16 +159,25 @@ def create_search_agent_graph(max_results: int = 4):
             summary_preview = summary[:150] + "..." if len(summary) > 150 else summary
             context.messages.append(AIMessage(f"Summary:\n{summary_preview}"))
 
-            is_valid = summarized_result.status == ValidationStatus.VALID
-            # Update validation status
+            # Update validation status with detailed logging
             if is_valid:
                 state["final_answer"] = summary
                 state["execution_log"].append("✅ Summary validated successfully")
+                state["execution_log"].append(
+                    f"   📝 Final answer: {len(summary)} characters"
+                )
             else:
                 state["execution_log"].append(
-                    f"⚠️  Summary validation failed (Flagged: {', '.join(flagged)})"
+                    f"⚠️  Summary validation failed (Status: {summarized_result.status})"
                 )
-                context.filters.add_flagged_sources(flagged)
+                if flagged:
+                    state["execution_log"].append(
+                        f"   🚫 Flagged sources: {', '.join(flagged)}"
+                    )
+                    context.filters.add_flagged_sources(flagged)
+                    state["execution_log"].append(
+                        "   🔄 Will retry with updated filters"
+                    )
 
             logger.debug(
                 f"Summarization complete: valid={is_valid}, flagged={len(flagged)}"

@@ -32,11 +32,19 @@ class ActionExecutor:
             filtered_query = f"{query} {source_filter}".strip()
             tasks.append((i, query, filtered_query))
 
+        logger.info(f"Starting parallel execution of {len(tasks)} search tasks")
+
         async def run_search(
             task_number: int, original_query: str, filtered_query: str
         ) -> dict:
             try:
+                logger.debug(
+                    f"Executing search task {task_number}: {original_query[:50]}..."
+                )
                 search_result = await asyncio.to_thread(self._search, filtered_query)
+                logger.debug(
+                    f"Task {task_number} completed: {len(search_result)} characters"
+                )
                 return {
                     "task_number": task_number,
                     "search_query": original_query,
@@ -61,6 +69,7 @@ class ActionExecutor:
 
         # Filter out exceptions if any
         valid_results = [r for r in results if isinstance(r, dict)]
+        logger.info(f"Search execution completed: {len(valid_results)} valid results")
         return valid_results
 
     def _search(self, query: str) -> str:
