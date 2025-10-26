@@ -32,8 +32,6 @@ class ActionExecutor:
             filtered_query = f"{query} {source_filter}".strip()
             tasks.append((i, query, filtered_query))
 
-        logger.info(f"Starting parallel execution of {len(tasks)} search tasks")
-
         async def run_search(
             task_number: int, original_query: str, filtered_query: str
         ) -> dict:
@@ -69,7 +67,7 @@ class ActionExecutor:
 
         # Filter out exceptions if any
         valid_results = [r for r in results if isinstance(r, dict)]
-        logger.info(f"Search execution completed: {len(valid_results)} valid results")
+        logger.debug(f"Search execution completed: {len(valid_results)} valid results")
         return valid_results
 
     def _search(self, query: str) -> str:

@@ -10,9 +10,12 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 from langchain.agents import create_agent
 
-from src.error.no_search_result_error import NoSearchResultError
+from src.agents.error.no_search_result_error import NoSearchResultError
 from src.utils import ValidationStatus
-from src.components.prompt.summarizer import SUMMARIZE_SYSTEM_PROMPT, SYNTHESIS_PROMPT
+from src.agents.components.prompt.summarizer import (
+    SUMMARIZE_SYSTEM_PROMPT,
+    SYNTHESIS_PROMPT,
+)
 
 logger = logging.getLogger(__name__)
 

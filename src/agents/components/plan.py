@@ -8,8 +8,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.error import NoInputError
-from src.components.prompt.plan import PLAN_PROMPT
+from src.agents.error import NoInputError
+from src.agents.components.prompt.plan import PLAN_PROMPT
 
 logger = logging.getLogger(__name__)
 

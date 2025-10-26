@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import TypedDict
 from langchain_core.messages import BaseMessage
 
-from src.context.source_filter import SourceFilterData
+from src.agents.context.source_filter import SourceFilterData
 
 
 class SearchMetadata(TypedDict):

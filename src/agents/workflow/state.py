@@ -5,7 +5,7 @@ Defines the core state structure and initialization logic for LangGraph workflow
 """
 
 from typing import TypedDict
-from src.context import SearchContext
+from src.agents.context import SearchContext
 
 from src.utils.validation_status import ValidationStatus
 

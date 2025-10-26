@@ -7,9 +7,9 @@ from typing import Literal
 from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import AIMessage, HumanMessage
 
-from src.components import PlanGenerator, ActionExecutor, Summarizer
+from src.agents.components import PlanGenerator, ActionExecutor, Summarizer
 from src.utils import ValidationStatus
-from .state import AgentState
+from src.agents.workflow.state import AgentState
 
 logger = logging.getLogger(__name__)
 
@@ -39,12 +39,10 @@ def create_search_agent_graph(max_results: int = 4):
 
             context.messages.append(AIMessage(f"Generated search plan:\n{plan}"))
 
-            # Add detailed log for streaming
+            # Add detailed log for streaming (step details will be handled by frontend)
             state["execution_log"].append(
                 f"✅ Plan generated with {len(plan.steps)} steps"
             )
-            for i, step in enumerate(plan.steps, 1):
-                state["execution_log"].append(f"   Step {i}: {step}")
 
             logger.debug(f"Plan generated successfully: {plan.steps}")
             return state
@@ -82,25 +80,16 @@ def create_search_agent_graph(max_results: int = 4):
 
             for result in results:
                 result_content = result.get("results", "")
-                query_preview = (
-                    result["search_query"][:50] + "..."
-                    if len(result["search_query"]) > 50
-                    else result["search_query"]
-                )
-
                 task_number = result["task_number"]
+
                 if result_content and str(result_content).strip():
                     search_results += str(result_content) + "\n"
                     successful_searches += 1
-                    search_summary.append(f"• Task {task_number}: {query_preview} ✅")
+                    search_summary.append(f"• Task {task_number}: ✅")
                 elif result.get("error"):
-                    search_summary.append(
-                        f"• Task {task_number}: {query_preview} ❌ Error: {result['error'][:50]}..."
-                    )
+                    search_summary.append(f"• Task {task_number}: ❌ Error")
                 else:
-                    search_summary.append(
-                        f"• Task {task_number}: {query_preview} ⚠️ No results"
-                    )
+                    search_summary.append(f"• Task {task_number}: ⚠️ No results")
 
             state["search_results"] = search_results
 
@@ -108,7 +97,8 @@ def create_search_agent_graph(max_results: int = 4):
             state["execution_log"].append(
                 f"✅ Search completed: {successful_searches}/{len(results)} tasks successful"
             )
-            state["execution_log"].extend(search_summary)
+            for summary in search_summary:
+                state["execution_log"].append(summary)
             state["execution_log"].append(
                 f"   📄 Total content: {len(search_results)} characters"
             )
