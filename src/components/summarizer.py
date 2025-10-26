@@ -51,6 +51,7 @@ class Summarizer:
             user_query: The original user query
             search_results: The search results from Action stage
         """
+
         logger.debug(f"Starting summarization for query: {user_query[:100]}...")
 
         if not search_results.strip():
@@ -63,8 +64,8 @@ class Summarizer:
         response = self.agent.invoke({"messages": [HumanMessage(synthesis_prompt)]})
         content: SummarizationResponse = response["structured_response"]
 
-        is_valid = content.status
-        flagged_sources = response
+        is_valid = content.status == ValidationStatus.VALID
+        flagged_sources = content.flagged_sources
 
         logger.debug(
             f"Summarization complete: valid={is_valid}, "
@@ -73,8 +74,3 @@ class Summarizer:
         )
 
         return content
-
-
-__all__ = [
-    "Summarizer",
-]
