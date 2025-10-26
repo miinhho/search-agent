@@ -66,6 +66,10 @@ async def main():
         context_stats = result["context"]
         print(str(context_stats))
 
+    except KeyboardInterrupt:
+        logger.warning("Search agent interrupted by user.")
+        print("\n❌ Search agent interrupted by user.")
+        return
     except Exception as e:
         logger.error(f"Error running search agent: {e}")
         print(f"❌ Error running search agent: {e}")

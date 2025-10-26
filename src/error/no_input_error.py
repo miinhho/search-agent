@@ -1,2 +1,3 @@
 class NoInputError(Exception):
-    pass
+    def __str__(self) -> str:
+        return "No input provided."

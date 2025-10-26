@@ -10,6 +10,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 from langchain.agents import create_agent
 
+from src.error.no_search_result_error import NoSearchResultError
 from src.utils import ValidationStatus
 from src.components.prompt.summarizer import SUMMARIZE_SYSTEM_PROMPT, SYNTHESIS_PROMPT
 
@@ -54,8 +55,7 @@ class Summarizer:
 
         if not search_results.strip():
             logger.warning("Empty search results provided")
-            # TODO : panic or custom exception handle
-            raise Exception()
+            raise NoSearchResultError()
 
         synthesis_prompt = SYNTHESIS_PROMPT.format(
             user_query=user_query, search_results=search_results
