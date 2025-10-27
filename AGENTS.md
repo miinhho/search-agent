@@ -4,5 +4,5 @@
 - langchain(1.0.2) & langgraph(1.0.1): LLM
 - langchain-google-genai: LLM API
 - langfuse(3.8.1): Observability
-- duckduckgo-search(8.1.1): search engine
-- langchain-community(0.4): for duckduckgo-search & langchain integration
+- ddgs(9.6.1): DuckDuckGo search engine
+- fastapi(0.120.0): server
